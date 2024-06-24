@@ -41,5 +41,24 @@ public class ProductForm extends JFrame {
         this.tableModelProducts.setColumnIdentifiers(headers);
         //instanciar el objeto JTable
         this.tableProducts = new JTable(tableModelProducts);
+        listBooks();
+    }
+
+    private void listBooks() {
+        //limpiar la tabla
+        tableModelProducts.setRowCount(0);
+        // obtener los libros
+        var products = productService.getAllProducts();
+        products.forEach((product) -> {
+            Object[] lineProduct = {
+                    product.getIdProduct(),
+                    product.getNameProduct(),
+                    product.getDescription(),
+                    product.getPrice(),
+                    product.getStock()
+            };
+            this.tableModelProducts.addRow(lineProduct);
+        });
+
     }
 }
