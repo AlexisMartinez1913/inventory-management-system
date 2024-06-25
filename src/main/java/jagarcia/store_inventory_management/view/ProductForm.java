@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 @Component
 public class ProductForm extends JFrame {
@@ -18,6 +22,19 @@ public class ProductForm extends JFrame {
         this.productService = productService;
         initForm();
         addButton.addActionListener( e -> addProduct());
+        tableProducts.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                loadProductsSelected();
+            }
+        });
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateProduct();
+            }
+        });
     }
 
 
@@ -29,6 +46,7 @@ public class ProductForm extends JFrame {
     private JTextField priceProduct;
     private JTextField stockText;
     private JButton addButton;
+    private JTextField idText;
     private JButton updateButton;
     private JButton deleteButton;
     private DefaultTableModel tableModelProducts;
@@ -43,6 +61,8 @@ public class ProductForm extends JFrame {
         int x = (sizeScreen.width - getWidth()/ 2);
         int y = (sizeScreen.height - getHeight() /2);
         setLocation(x, y);
+        addButton.setEnabled(true);
+        updateButton.setEnabled(false);
 
     }
 
@@ -71,19 +91,82 @@ public class ProductForm extends JFrame {
         listProducts();
     }
 
+    //ACTUALIZAR PRODUCTO
+    private void updateProduct() {
+
+        if (this.idText.getText().isEmpty()) {
+            showMessage("You should be select a register");
+        } else {
+            if (productText.getText().isEmpty()) {
+                showMessage("Enter the name of the product");
+                productText.requestFocusInWindow();
+            }
+        }
+
+        //leer los valores del FORM
+        var idProduct = Integer.parseInt(idText.getText());
+        var nameProuct = productText.getText();
+        var description = descriptionText.getText();
+        var price = Double.parseDouble(priceProduct.getText());
+        var stock = Integer.parseInt(stockText.getText());
+        //Crear Objeto Product y asignarlo
+        var product = new Product();
+        product.setIdProduct(idProduct);
+        product.setNameProduct(nameProuct);
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setStock(stock);
+        this.productService.save(product);
+        showMessage("Product updated successfully!");
+        cleanForm();
+        listProducts();
+
+        // Habilitar y deshabilitar botones
+        addButton.setEnabled(true);
+        updateButton.setEnabled(false);
+
+    }
+    //seleccionar los datos de la tabla y ponerlos en los textfield
+    private void loadProductsSelected() {
+        //indices de las columnas inician en cero
+        var line = tableProducts.getSelectedRow();
+        if (line != -1) { //-1 si no se selecciono ningun registro
+            String idProduct = tableProducts.getModel().getValueAt(line, 0).toString();
+            idText.setText(idProduct);
+            String nameProduct = tableProducts.getModel().getValueAt(line, 1).toString();
+            productText.setText(nameProduct);
+            String description = tableProducts.getModel().getValueAt(line, 2).toString();
+            descriptionText.setText(description);
+            String price = tableProducts.getModel().getValueAt(line, 3).toString();
+            priceProduct.setText(price);
+            String stock = tableProducts.getModel().getValueAt(line, 4).toString();
+            stockText.setText(stock);
+
+            // Habilitar y deshabilitar botones
+            addButton.setEnabled(false);
+            updateButton.setEnabled(true);
+
+        }
+
+    }
+    // Limpiar FORM
     private void cleanForm() {
         productText.setText("");
         descriptionText.setText("");
         priceProduct.setText("");
         stockText.setText("");
     }
-
+    //Mostrar mensaje si se dejan datos vacios
     private void showMessage(String s) {
         JOptionPane.showMessageDialog(this, s);
     }
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
+        //Crear el elemento IdProduct OCULTO
+        idText = new JTextField("");
+        idText.setVisible(false);
+
         this.tableModelProducts = new DefaultTableModel(0,5);
         String[] headers = {"Id", "Product", "Category", "Price", "Stock"};
         this.tableModelProducts.setColumnIdentifiers(headers);
