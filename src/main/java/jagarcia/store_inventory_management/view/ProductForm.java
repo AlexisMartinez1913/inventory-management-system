@@ -35,6 +35,12 @@ public class ProductForm extends JFrame {
                 updateProduct();
             }
         });
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteProduct();
+            }
+        });
     }
 
 
@@ -51,6 +57,7 @@ public class ProductForm extends JFrame {
     private JButton deleteButton;
     private DefaultTableModel tableModelProducts;
 
+    //Metodo para cargar el form
     private void initForm() {
         setContentPane(panel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,11 +68,10 @@ public class ProductForm extends JFrame {
         int x = (sizeScreen.width - getWidth()/ 2);
         int y = (sizeScreen.height - getHeight() /2);
         setLocation(x, y);
-        addButton.setEnabled(true);
-        updateButton.setEnabled(false);
+
 
     }
-
+    //Metodo para agregar un producto
     private void addProduct() {
 
         if (productText.getText().isEmpty()) {
@@ -91,7 +97,7 @@ public class ProductForm extends JFrame {
         listProducts();
     }
 
-    //ACTUALIZAR PRODUCTO
+    //Metodo para ACTUALIZAR PRODUCTO
     private void updateProduct() {
 
         if (this.idText.getText().isEmpty()) {
@@ -121,12 +127,10 @@ public class ProductForm extends JFrame {
         cleanForm();
         listProducts();
 
-        // Habilitar y deshabilitar botones
-        addButton.setEnabled(true);
-        updateButton.setEnabled(false);
+
 
     }
-    //seleccionar los datos de la tabla y ponerlos en los textfield
+    //Metodo para seleccionar los datos de la tabla y ponerlos en los textfield
     private void loadProductsSelected() {
         //indices de las columnas inician en cero
         var line = tableProducts.getSelectedRow();
@@ -142,14 +146,34 @@ public class ProductForm extends JFrame {
             String stock = tableProducts.getModel().getValueAt(line, 4).toString();
             stockText.setText(stock);
 
-            // Habilitar y deshabilitar botones
-            addButton.setEnabled(false);
-            updateButton.setEnabled(true);
+
 
         }
 
     }
-    // Limpiar FORM
+
+    private void deleteProduct() {
+        //validar si el user si selecciona el registro
+        var line = tableProducts.getSelectedRow();
+        if (line !=1) {
+            String idProduct = tableProducts.getModel().getValueAt(line, 0).toString();
+            var product = new Product();
+            product.setIdProduct(Integer.parseInt(idProduct));
+            productService.deleteProduct(product);
+            showMessage("Product with " + idProduct + " succesfully" + "deleted!" );
+            cleanForm();
+            listProducts();
+        } else {
+            showMessage("You should be select a Product.");
+        }
+
+
+        cleanForm();
+        listProducts();
+
+
+    }
+    // Metodo para Limpiar FORM
     private void cleanForm() {
         productText.setText("");
         descriptionText.setText("");
@@ -161,24 +185,11 @@ public class ProductForm extends JFrame {
         JOptionPane.showMessageDialog(this, s);
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-        //Crear el elemento IdProduct OCULTO
-        idText = new JTextField("");
-        idText.setVisible(false);
-
-        this.tableModelProducts = new DefaultTableModel(0,5);
-        String[] headers = {"Id", "Product", "Category", "Price", "Stock"};
-        this.tableModelProducts.setColumnIdentifiers(headers);
-        //instanciar el objeto JTable
-        this.tableProducts = new JTable(tableModelProducts);
-        listProducts();
-    }
-
+    //LISTAR LOS PRODUCTOS EN LA TABLA
     private void listProducts() {
         //limpiar la tabla
         tableModelProducts.setRowCount(0);
-        // obtener los libros
+        // obtener los libros llamando al service
         var products = productService.getAllProducts();
         products.forEach((product) -> {
             Object[] lineProduct = {
@@ -192,4 +203,31 @@ public class ProductForm extends JFrame {
         });
 
     }
+
+
+    //VISUALIZACION DE LA GUI
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        //Crear el elemento IdProduct de manera OCULTA en la GUI
+        idText = new JTextField("");
+        idText.setVisible(false);
+        //TAMAÑO DE LA TABLA
+        this.tableModelProducts = new DefaultTableModel(0,5) {
+            //sobreescribir metodo para que el user no pueda editar los datos desde la table
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        //CABECERA DE LA TABLA
+        String[] headers = {"Id", "Product", "Category", "Price", "Stock"};
+        this.tableModelProducts.setColumnIdentifiers(headers);
+        //instanciar el objeto TIPO JTable
+        this.tableProducts = new JTable(tableModelProducts);
+        //Evitar q se seleccionen varios registros
+        tableProducts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listProducts();
+    }
+
 }
