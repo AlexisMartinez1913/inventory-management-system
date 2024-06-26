@@ -41,6 +41,12 @@ public class ProductForm extends JFrame {
                 deleteProduct();
             }
         });
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
     }
 
 
@@ -55,6 +61,7 @@ public class ProductForm extends JFrame {
     private JTextField idText;
     private JButton updateButton;
     private JButton deleteButton;
+    private JButton exitButton;
     private DefaultTableModel tableModelProducts;
 
     //Metodo para cargar el form
@@ -126,6 +133,7 @@ public class ProductForm extends JFrame {
         showMessage("Product updated successfully!");
         cleanForm();
         listProducts();
+        addButton.setEnabled(true);
 
 
 
@@ -145,6 +153,9 @@ public class ProductForm extends JFrame {
             priceProduct.setText(price);
             String stock = tableProducts.getModel().getValueAt(line, 4).toString();
             stockText.setText(stock);
+
+            //inhabilitar boton de add para q no agregue uno repetido
+            addButton.setEnabled(false);
 
 
 
