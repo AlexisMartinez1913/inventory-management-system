@@ -232,7 +232,7 @@ public class ProductForm extends JFrame {
         };
 
         //CABECERA DE LA TABLA
-        String[] headers = {"Id", "Product", "Category", "Price", "Stock"};
+        String[] headers = {"Id", "Product", "Description", "Price", "Stock"};
         this.tableModelProducts.setColumnIdentifiers(headers);
         //instanciar el objeto TIPO JTable
         this.tableProducts = new JTable(tableModelProducts);
